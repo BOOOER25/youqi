@@ -191,15 +191,18 @@
   $('#yq-calendar').onclick = () => {
     const plan = reminderPlan();
     if (!plan.length) { toast('暂无可导出的提醒，请添加物品或开启提醒计划'); return; }
-    openDialog('导出日历提醒', `<div class="mt-form-notice">${mode === 'demo' ? '当前为示例模式，导出内容也是示例。' : ''}将导出所有标签下的 ${plan.length} 条提醒安排。导入系统日历后，请检查其提醒开关和通知权限。更新记录后需要重新导出并更新日历。</div><div class="mt-form-actions"><button class="mt-button mt-quiet" id="yq-cancel-calendar">取消</button><button class="mt-button mt-primary" id="yq-export-calendar">下载日历文件</button></div>`);
+    const grouped = new Map();
+    for (const { item, date } of plan) { if (!grouped.has(date)) grouped.set(date, []); grouped.get(date).push(item); }
+    openDialog('导出日历提醒', `<div class="mt-form-notice">${mode === 'demo' ? '当前为示例模式，导出内容也是示例。' : ''}将导出所有标签下的 ${plan.length} 条提醒安排，按日期合并为 ${grouped.size} 个日历事项。导入系统日历后，请检查其提醒开关和通知权限。更新记录后需要重新导出并更新日历。</div><div class="mt-form-actions"><button class="mt-button mt-quiet" id="yq-cancel-calendar">取消</button><button class="mt-button mt-primary" id="yq-export-calendar">下载日历文件</button></div>`);
     $('#yq-cancel-calendar').onclick = closeDialog;
     $('#yq-export-calendar').onclick = () => {
       const escapeICS = s => String(s).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
       const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''), clock = state.settings.time.replace(':', '') + '00';
       const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Youqi//Expiry Reminder//ZH', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:有期 · 到期提醒'];
-      for (const { item, date } of plan) {
-        const eventID = [...new TextEncoder().encode(item.id)].map(x => x.toString(16).padStart(2, '0')).join('');
-        lines.push('BEGIN:VEVENT', `UID:${eventID}-${date}@youqi.local`, `DTSTAMP:${stamp}`, `DTSTART:${date.replace(/-/g, '')}T${clock}`, 'DURATION:PT5M', `SUMMARY:${escapeICS('有期：' + item.name + '到期提醒')}`, `DESCRIPTION:${escapeICS(`物品：${item.name}\n有效期至：${item.expiry}\n标签：${item.tags.join('、')}\n位置：${item.location || '未填写'}\n请核对包装并检查物品状态。`)}`, 'BEGIN:VALARM', 'TRIGGER:PT0M', 'ACTION:DISPLAY', `DESCRIPTION:${escapeICS(item.name + '到期提醒')}`, 'END:VALARM', 'END:VEVENT');
+      for (const [date, items] of grouped) {
+        const summary = items.length === 1 ? `有期：${items[0].name}到期提醒` : `有期：${items.length} 件物品需要关注`;
+        const description = items.map(item => `物品：${item.name}\n有效期至：${item.expiry}\n标签：${item.tags.join('、')}\n位置：${item.location || '未填写'}`).join('\n\n') + '\n\n请核对包装并检查物品状态。';
+        lines.push('BEGIN:VEVENT', `UID:${mode}-${date}@youqi.local`, `DTSTAMP:${stamp}`, `DTSTART:${date.replace(/-/g, '')}T${clock}`, 'DURATION:PT5M', `SUMMARY:${escapeICS(summary)}`, `DESCRIPTION:${escapeICS(description)}`, 'BEGIN:VALARM', 'TRIGGER:PT0M', 'ACTION:DISPLAY', `DESCRIPTION:${escapeICS(summary)}`, 'END:VALARM', 'END:VEVENT');
       }
       lines.push('END:VCALENDAR');
       // Fold by UTF-8 octets, preserving multibyte Chinese characters (RFC 5545).
