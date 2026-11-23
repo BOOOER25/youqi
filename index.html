@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#247668">
+  <meta name="description" content="有期：从家庭药箱开始，记录药品、厨房食材、日化用品的有效期。自定义标签，及时整理，少一点遗忘。">
+  <title>有期 · 记好日期，安心有期</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+<div id="medicine-tool">
+  <div class="mt-app">
+    <header class="mt-appbar">
+      <div class="mt-brand"><span class="mt-brandmark">期</span><span>有期<span class="mt-brand-sub">记好日期，安心有期</span></span></div>
+      <div class="yq-top-actions"><span id="yq-mode" class="mt-prototype">示例模式</span><button id="yq-data" class="mt-text-button">数据管理</button></div>
+    </header>
+    <main class="mt-main">
+      <nav class="mt-breadcrumb" aria-label="所在位置"><span>生活工具</span><span>›</span><span>有效期记录</span></nav>
+      <div class="mt-title-row">
+        <div><div class="mt-eyebrow">A LITTLE CARE, EVERY DAY</div><h1>日常有期<span class="mt-title-dot"></span></h1><p class="mt-subtitle">从家庭药箱开始，记住生活里每一份有效期。</p></div>
+        <button class="mt-button mt-primary" id="mt-add"><span aria-hidden="true">＋</span> 添加物品</button>
+      </div>
+      <div class="yq-demo-banner" id="yq-demo-banner"><span>先用示例试试看，药品、厨房和日化都能记。</span><button id="yq-start" class="mt-text-button">开始记录我的物品 →</button></div>
+      <section class="mt-overview" aria-label="有效期概览">
+        <div class="mt-overview-copy"><span class="mt-kicker"><span class="mt-live-dot"></span><span id="yq-overview-tag">家庭药箱 · 药品优先</span></span><h2 id="mt-overview-title"></h2><p id="mt-overview-note"></p><button class="mt-text-button" id="mt-focus">查看需要关注的物品 <span aria-hidden="true">↗</span></button></div>
+        <div class="mt-stats"><button class="mt-stat" data-filter="soon"><strong id="mt-soon-count">0</strong><span><b class="mt-dot mt-amber"></b>即将到期</span></button><button class="mt-stat" data-filter="expired"><strong id="mt-expired-count">0</strong><span><b class="mt-dot mt-coral"></b>已过期</span></button><button class="mt-stat" data-filter="all"><strong id="mt-total-count">0</strong><span><b class="mt-dot mt-teal"></b>当前记录</span></button></div>
+      </section>
+      <div class="mt-columns">
+        <section class="mt-list-section" aria-label="物品记录">
+          <div class="mt-section-heading"><h2 id="yq-list-heading">我的药箱</h2><span id="mt-date" class="mt-muted"></span></div>
+          <div class="yq-tag-bar" id="yq-tags" aria-label="按标签筛选"></div>
+          <div class="mt-list-controls">
+            <div class="mt-tabs" aria-label="按有效期筛选"><button data-filter="all" class="mt-tab is-active" aria-pressed="true">全部状态</button><button data-filter="soon" class="mt-tab" aria-pressed="false">即将到期</button><button data-filter="expired" class="mt-tab" aria-pressed="false">已过期</button><button data-filter="archived" class="mt-tab" aria-pressed="false">已归档</button><button data-filter="attention" class="mt-tab" aria-pressed="false" hidden>需关注</button></div>
+            <label class="mt-search"><span aria-hidden="true">⌕</span><input id="mt-search" type="search" placeholder="搜索名称、位置、标签" aria-label="搜索物品"></label>
+          </div>
+          <div class="mt-medicine-list" id="mt-list" aria-live="polite"></div>
+          <div class="mt-list-footer"><span>有效期请按包装标注核对填写</span><span id="mt-visible-count"></span></div>
+        </section>
+        <aside class="mt-aside">
+          <section class="mt-reminder-card">
+            <div class="mt-section-heading"><h2>到期提醒</h2><span class="mt-status" id="mt-reminder-status">计划已保存</span></div>
+            <div class="mt-reminder-visual" aria-hidden="true"><div class="mt-bell"></div><span class="mt-signal"></span></div>
+            <h3 id="mt-reminder-heading">把日期交给提醒</h3><p id="mt-reminder-summary"></p>
+            <button class="mt-button mt-secondary mt-full" id="mt-settings">管理提醒计划</button>
+            <button class="mt-button mt-quiet mt-full yq-calendar-button" id="yq-calendar">导出日历提醒 ↗</button>
+            <div class="mt-prototype-note">手机提醒可导入系统日历</div><p class="yq-push-note">当前未接入后台推送服务</p>
+          </section>
+          <section class="mt-next-section"><div class="mt-section-heading"><h3>下一次提醒</h3><button class="mt-text-button" id="mt-notification-preview">预览样式 ↗</button></div><div id="mt-next-reminder"></div></section>
+          <div class="mt-gentle-note"><span class="mt-note-symbol" aria-hidden="true">✳</span><p>药箱里的安心，<br>冰箱里的新鲜，都值得记住。</p></div>
+        </aside>
+      </div>
+      <footer class="mt-footer"><span><b class="mt-tiny-mark"></b>有期 · 每一份有效期，都有迹可循</span><span id="mt-storage-note">数据仅存在此浏览器，记得导出备份</span></footer>
+    </main>
+  </div>
+  <div class="mt-overlay" id="mt-overlay" hidden><section class="mt-dialog" role="dialog" aria-modal="true" aria-labelledby="mt-dialog-title" id="mt-dialog"><div class="mt-dialog-header"><div><span class="mt-eyebrow">YOUQI · EVERYDAY EXPIRY</span><h2 id="mt-dialog-title"></h2></div><button class="mt-icon-button" id="mt-dialog-close" aria-label="关闭窗口">×</button></div><div id="mt-dialog-body"></div></section></div>
+  <div class="mt-toast" id="mt-toast" role="status" hidden></div>
+  <input type="file" id="yq-import-file" accept=".json,application/json" hidden aria-label="导入备份">
+  <noscript><p>有期需要启用 JavaScript 才能保存和管理记录。</p></noscript>
+</div>
+</body>
+</html>
