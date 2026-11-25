@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#247668">
+  <meta name="theme-color" content="#fff9e8">
   <meta name="description" content="有期：从家庭药箱开始，记录药品、厨房食材、日化用品的有效期。自定义标签，及时整理，少一点遗忘。">
   <title>有期 · 记好日期，安心有期</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
   <script src="images.js?v=2" defer></script>
-  <script src="app.js?v=2" defer></script>
+  <script src="app.js?v=3" defer></script>
 </head>
 <body>
 <div id="medicine-tool">
@@ -17,7 +17,8 @@
     <main class="mt-main">
       <header class="yq-simple-header"><h1>有期</h1><div class="yq-header-actions"><button id="yq-data" class="mt-text-button">数据管理</button><button class="mt-button mt-primary" id="mt-add"><span aria-hidden="true">＋</span> 新增</button></div></header>
       <section class="mt-overview" aria-label="有效期概览">
-        <div class="mt-overview-copy"><span class="mt-kicker"><span class="mt-live-dot"></span><span id="yq-overview-tag">家庭药箱 · 药品优先</span></span><h2 id="mt-overview-title"></h2><p id="mt-overview-note"></p><button class="mt-text-button" id="mt-focus">查看需要关注的物品 <span aria-hidden="true">↗</span></button></div>
+        <div class="mt-overview-copy"><span class="mt-kicker"><span id="yq-overview-tag">家庭药箱 · 药品优先</span></span><h2 id="mt-overview-title"></h2><p id="mt-overview-note"></p><button class="mt-text-button" id="mt-focus">查看需关注物品 <span aria-hidden="true">›</span></button></div>
+        <img class="yq-overview-cat" src="design-cat.png" width="96" height="96" alt="">
         <div class="mt-stats"><button class="mt-stat" data-filter="soon"><strong id="mt-soon-count">0</strong><span><b class="mt-dot mt-amber"></b>即将到期</span></button><button class="mt-stat" data-filter="expired"><strong id="mt-expired-count">0</strong><span><b class="mt-dot mt-coral"></b>已过期</span></button><button class="mt-stat" data-filter="all"><strong id="mt-total-count">0</strong><span><b class="mt-dot mt-teal"></b>当前记录</span></button></div>
       </section>
         <section class="mt-list-section" aria-label="物品记录">
