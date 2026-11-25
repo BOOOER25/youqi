@@ -2,6 +2,18 @@
 window.YouqiImages = (() => {
   'use strict';
   const cache = new Map(), urls = new Map();
+  const demoCutouts = new Set([1, 2, 4, 6, 9]);
+  function demoAsset(id) {
+    const match = /^youqi-demo-photo-v1-([0-9])$/.exec(id || '');
+    if (!match) return null;
+    const index = Number(match[1]), cutout = demoCutouts.has(index);
+    return { original: `demo-${index}-original.jpg`, image: cutout ? `demo-${index}-cutout.webp` : `demo-${index}-original.jpg`, cutout };
+  }
+  async function fetchDemoPhoto(path) {
+    const response = await fetch(new URL(path, document.baseURI));
+    if (!response.ok) throw new Error('示例图片暂时无法读取，请稍后重试');
+    return response.blob();
+  }
   let database, worker, pending, requestId = 0;
   function db() {
     if (!database) database = new Promise((resolve, reject) => {
@@ -17,7 +29,12 @@ window.YouqiImages = (() => {
     if (!id) return null;
     if (cache.has(id)) return cache.get(id);
     const store = (await db()).transaction('assets').objectStore('assets');
-    const result = await new Promise((resolve, reject) => { const q = store.get(id); q.onsuccess = () => resolve(q.result || null); q.onerror = () => reject(q.error); });
+    let result = await new Promise((resolve, reject) => { const q = store.get(id); q.onsuccess = () => resolve(q.result || null); q.onerror = () => reject(q.error); });
+    const demo = demoAsset(id);
+    if (!result && demo) {
+      const original = await fetchDemoPhoto(demo.original), blob = demo.cutout ? await fetchDemoPhoto(demo.image) : original;
+      result = { id, original, blob, cutout: demo.cutout };
+    }
     if (result) cache.set(id, result);
     return result;
   }
@@ -40,7 +57,7 @@ window.YouqiImages = (() => {
     if (!id) return '';
     if (urls.has(id)) return urls.get(id);
     const asset = cache.get(id);
-    if (!asset) return '';
+    if (!asset) { const demo = demoAsset(id); return demo ? new URL(demo.image, document.baseURI).href : ''; }
     const address = URL.createObjectURL(asset.blob); urls.set(id, address); return address;
   }
   const canvasBlob = canvas => new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('无法处理此图片')), 'image/webp', 0.9));
@@ -114,5 +131,6 @@ window.YouqiImages = (() => {
     }
     return output;
   }
-  return { get, put, discard, url, prepare, remove, cancel, exportAssets, fromDataUrl };
+  const kind = id => (cache.get(id) || demoAsset(id))?.cutout ? '抠图结果' : '原图';
+  return { get, put, discard, url, kind, prepare, remove, cancel, exportAssets, fromDataUrl };
 })();

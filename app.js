@@ -34,7 +34,7 @@
     if (!x || typeof x.id !== 'string' || !x.id.length || x.id.length > 100 || typeof x.name !== 'string' || !x.name.trim() || x.name.length > 80 || !parseDate(x.expiry)) throw new Error('记录的名称或有效期不正确');
     if (!Array.isArray(x.tags) || x.tags.length < 1 || x.tags.length > 8 || !x.tags.every(t => typeof t === 'string' && t.trim().length > 0 && t.length <= 16)) throw new Error('最多填写 8 个标签，每个标签不超过 16 字');
     if (x.identifier != null && typeof x.identifier !== 'string') throw new Error('唯一标识需使用字符串');
-    return { id: x.id, name: x.name.trim(), expiry: x.expiry, tags: [...new Set(x.tags.map(t => t.trim()))], location: String(x.location || '').slice(0, 50), note: String(x.note || '').slice(0, 100), notes: normalizeNotes(x.notes), identifier: x.identifier ?? '', imageId: typeof x.imageId === 'string' && x.imageId.length <= 100 ? x.imageId : null, archived: x.archived === true, reason: x.reason === 'used' ? 'used' : 'disposed', added: parseDate(x.added) ? x.added : dateKey(today()) };
+    return { id: x.id, name: x.name.trim(), expiry: x.expiry, tags: [...new Set(x.tags.map(t => t.trim()))], location: String(x.location || '').slice(0, 50), note: String(x.note || '').slice(0, 100), notes: normalizeNotes(x.notes), identifier: x.identifier ?? '', imageId: typeof x.imageId === 'string' && x.imageId.length <= 100 ? x.imageId : null, ...(x.sampleImageInitialized === true ? { sampleImageInitialized: true } : {}), archived: x.archived === true, reason: x.reason === 'used' ? 'used' : 'disposed', added: parseDate(x.added) ? x.added : dateKey(today()) };
   }
   function normalizeState(s) {
     if (!s || s.version !== 1 || !Array.isArray(s.items) || s.items.length > 2000) throw new Error('请选择有期导出的 JSON 备份文件');
@@ -48,11 +48,29 @@
     const seed = [['氯雷他定片', -8, '药品', '客厅药箱', '片剂 · 1盒'], ['布洛芬缓释胶囊', 7, '药品', '客厅药箱', '胶囊 · 1盒'], ['维生素 C 片', 25, '药品', '卧室抽屉', '片剂 · 1瓶'], ['碘伏消毒液', 140, '药品', '客厅药箱', '外用 · 1瓶'], ['蒙脱石散', 240, '药品', '客厅药箱', '散剂 · 1盒'], ['医用退热贴', 310, '药品', '儿童用品柜', '护理用品 · 1盒'], ['原味酸奶', 3, '厨房', '冰箱冷藏层', '未开封 · 4杯'], ['意大利面', 95, '厨房', '厨房储物柜', '500克 · 1袋'], ['防晒乳', 20, '日化', '卧室梳妆台', '未开封 · 1支'], ['一次性口罩', 180, '其他', '玄关抽屉', '未开封 · 1盒']];
     return { version: 1, items: seed.map((x, i) => normalizeItem({ id: `sample-${i}`, name: x[0], expiry: dateKey(shift(today(), x[1])), tags: [x[2]], location: x[3], note: x[4], notes: i === 1 ? demoNotes : [] })) };
   }
+  function enrichDemo(collection) {
+    return { ...collection, items: collection.items.map(item => {
+      const match = /^sample-([0-9])$/.exec(item.id);
+      if (!match) return item;
+      const index = Number(match[1]), next = { ...item, imageId: item.imageId || (item.sampleImageInitialized ? null : `youqi-demo-photo-v1-${index}`), sampleImageInitialized: true };
+      if (item.note) {
+        // Explicitly fictional timestamps apply only to the built-in demo collection.
+        const id = `sample-legacy-note-${index}`, existing = item.notes.find(n => n.id === id);
+        const date = new Date(2026, 10, 18 + Math.floor(index / 3), 9 + index % 3, 12 + index * 3);
+        if (!existing || existing.text !== item.note) next.notes = [...item.notes, { id: existing ? uid() : id, text: item.note, createdAt: date.toISOString() }];
+        next.note = '';
+      }
+      return next;
+    }) };
+  }
   // Retain existing collections and mode; new visitors start with an empty personal collection.
   let mode = read('mode') === 'demo' ? 'demo' : 'personal';
   function loadMode() {
     const stored = read(mode);
-    try { return stored ? normalizeState(stored) : mode === 'demo' ? demoState() : { version: 1, items: [] }; }
+    try {
+      const collection = stored ? normalizeState(stored) : mode === 'demo' ? demoState() : { version: 1, items: [] };
+      return mode === 'demo' ? enrichDemo(collection) : collection;
+    }
     catch { storageAvailable = false; return { version: 1, items: [] }; }
   }
   let state = loadMode(), selectedTag = '药品', filter = 'all', query = '', toastTimer, previousFocus, dialogCleanup;
@@ -146,7 +164,7 @@
   function detail(id) {
     const m = state.items.find(x => x.id === id); if (!m) return;
     const photo = images.url(m.imageId);
-    openDialog('物品详情', `${photo ? `<button class="yq-detail-image" id="yq-photo-enlarge" aria-label="放大${esc(m.name)}的图片"><img src="${esc(photo)}" alt="${esc(m.name)}"><span>点击放大图片 ↗</span></button>` : ''}<div class="mt-detail-top">${photo ? '' : thumbnail(m)}<div><div class="mt-detail-name">${esc(m.name)}</div><span class="mt-badge ${stateOf(m)}">${esc(statusLabel(m))}</span></div></div><dl class="mt-detail-fields"><div><dt>标签</dt><dd>${esc(m.tags.join(' / '))}</dd></div><div><dt>有效期至</dt><dd>${fmt(m.expiry)}</dd></div><div><dt>唯一标识</dt><dd class="yq-identifier-value">${m.identifier ? esc(m.identifier) : '未填写'}</dd></div><div><dt>存放位置</dt><dd>${esc(m.location || '未填写')}</dd></div></dl><section class="yq-notes" aria-labelledby="yq-notes-title"><div class="yq-notes-heading"><h3 id="yq-notes-title">备注记录</h3><span>最新在前</span></div><form id="yq-note-form"><label class="mt-field" for="yq-note-text"><span>添加备注</span><textarea id="yq-note-text" rows="3" maxlength="1000" required placeholder="写下规格、数量或这次整理的情况…"></textarea></label><div class="yq-note-submit"><span>保存时自动记录日期和时间</span><button class="mt-button mt-primary" type="submit">添加备注</button></div><p id="yq-note-error" class="mt-error" role="alert" hidden></p></form><div id="yq-note-timeline" class="yq-note-timeline">${notesTimeline(m)}</div></section><div class="mt-detail-actions">${m.archived ? '<button class="mt-button mt-primary" id="yq-restore">恢复记录</button>' : '<button class="mt-button mt-primary" id="yq-edit">编辑记录</button><button class="mt-button mt-secondary" id="yq-used">已用完</button><button class="mt-button mt-secondary" id="yq-disposed">已处理</button>'}</div>`);
+    openDialog('物品详情', `${photo ? `<button class="yq-detail-image" id="yq-photo-enlarge" aria-label="放大${esc(m.name)}的图片"><img src="${esc(photo)}" alt="${esc(m.name)}"><span>${esc(images.kind(m.imageId))} · 点击放大图片 ↗</span></button>` : ''}<div class="mt-detail-top">${photo ? '' : thumbnail(m)}<div><div class="mt-detail-name">${esc(m.name)}</div><span class="mt-badge ${stateOf(m)}">${esc(statusLabel(m))}</span></div></div><dl class="mt-detail-fields"><div><dt>标签</dt><dd>${esc(m.tags.join(' / '))}</dd></div><div><dt>有效期至</dt><dd>${fmt(m.expiry)}</dd></div><div><dt>唯一标识</dt><dd class="yq-identifier-value">${m.identifier ? esc(m.identifier) : '未填写'}</dd></div><div><dt>存放位置</dt><dd>${esc(m.location || '未填写')}</dd></div></dl><section class="yq-notes" aria-labelledby="yq-notes-title"><div class="yq-notes-heading"><h3 id="yq-notes-title">备注记录</h3><span>最新在前</span></div><form id="yq-note-form"><label class="mt-field" for="yq-note-text"><span>添加备注</span><textarea id="yq-note-text" rows="3" maxlength="1000" required placeholder="写下规格、数量或这次整理的情况…"></textarea></label><div class="yq-note-submit"><span>保存时自动记录日期和时间</span><button class="mt-button mt-primary" type="submit">添加备注</button></div><p id="yq-note-error" class="mt-error" role="alert" hidden></p></form><div id="yq-note-timeline" class="yq-note-timeline">${notesTimeline(m)}</div></section><div class="mt-detail-actions">${m.archived ? '<button class="mt-button mt-primary" id="yq-restore">恢复记录</button>' : '<button class="mt-button mt-primary" id="yq-edit">编辑记录</button><button class="mt-button mt-secondary" id="yq-used">已用完</button><button class="mt-button mt-secondary" id="yq-disposed">已处理</button>'}</div>`);
     if (photo) $('#yq-photo-enlarge').onclick = () => viewImage(id);
     $('#yq-note-form').onsubmit = e => {
       e.preventDefault();
@@ -254,7 +272,7 @@
   }
   function changeMode(nextMode) { mode = nextMode; state = loadMode(); selectedTag = '药品'; filter = 'all'; query = ''; $('#mt-search').value = ''; write('mode', mode); render(); closeDialog(); hydrate(); toast(mode === 'personal' ? '已切换到我的记录' : '示例模式，你的记录仍保留'); }
   $('#yq-data').onclick = () => {
-    openDialog('数据管理', `<p class="mt-form-notice">当前为${mode === 'demo' ? '示例模式' : '我的记录'}，共 ${state.items.length} 条记录。文字和图片只保存在此浏览器，请定期备份。</p><div class="yq-data-actions"><button class="mt-button mt-secondary mt-full" id="yq-export">导出 JSON 备份（含图片）</button><button class="mt-button mt-secondary mt-full" id="yq-import">导入备份到我的记录</button><button class="mt-button mt-quiet mt-full" id="yq-switch">${mode === 'demo' ? '切换到我的记录' : '查看示例（保留我的记录）'}</button></div><p class="yq-detail-note">本版仅在页面显示临期、过期状态，不发送通知。${storageAvailable ? '' : '浏览器存储当前不可用，请及时备份。'}</p><p class="yq-detail-note">抠图在本机处理；首次使用下载模型资源。<a href="https://github.com/BOOOER25/youqi" target="_blank" rel="noopener noreferrer">查看开源代码 · AGPL-3.0</a></p>`);
+    openDialog('数据管理', `<p class="mt-form-notice">当前为${mode === 'demo' ? '示例模式' : '我的记录'}，共 ${state.items.length} 条记录。文字和图片只保存在此浏览器，请定期备份。</p><div class="yq-data-actions"><button class="mt-button mt-secondary mt-full" id="yq-export">导出 JSON 备份（含图片）</button><button class="mt-button mt-secondary mt-full" id="yq-import">导入备份到我的记录</button><button class="mt-button mt-quiet mt-full" id="yq-switch">${mode === 'demo' ? '切换到我的记录' : '查看示例（保留我的记录）'}</button></div><p class="yq-detail-note">本版仅在页面显示临期、过期状态，不发送通知。${storageAvailable ? '' : '浏览器存储当前不可用，请及时备份。'}</p><p class="yq-detail-note">抠图在本机处理；首次使用下载模型资源。<a href="https://github.com/BOOOER25/youqi" target="_blank" rel="noopener noreferrer">查看开源代码 · AGPL-3.0</a> · <a href="https://github.com/BOOOER25/youqi/blob/main/DEMO-ASSETS.md" target="_blank" rel="noopener noreferrer">示例图片来源</a></p>`);
     $('#yq-export').onclick = async () => {
       const button = $('#yq-export'); button.disabled = true; button.textContent = '正在整理图片备份…';
       const snapshot = structuredClone(state), currentMode = mode;
