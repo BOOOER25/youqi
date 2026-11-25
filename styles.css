@@ -150,3 +150,40 @@ body{margin:0;background:#f6f3eb;padding:28px 20px}
 @media(max-width:360px){#medicine-tool .mt-main{padding:22px 14px}#medicine-tool .yq-header-actions{gap:12px}#medicine-tool .mt-overview{grid-template-columns:minmax(0,1fr) 58px}#medicine-tool .yq-overview-cat{width:60px;height:74px}#medicine-tool .mt-overview h2{font-size:16px}#medicine-tool .mt-overview p{font-size:10px}#medicine-tool .yq-tag-bar{gap:7px}#medicine-tool .yq-tag{padding:5px 9px}#medicine-tool .mt-form-row{gap:9px}#medicine-tool .yq-photo-preview{width:66px;height:72px}#medicine-tool .yq-photo-layout{gap:10px}}
 @media(pointer:coarse){#medicine-tool .mt-tab,#medicine-tool .yq-tag,#medicine-tool .mt-text-button{min-height:40px}#medicine-tool .mt-icon-button{width:40px;height:40px}#medicine-tool .mt-search input{font-size:16px}#medicine-tool .mt-detail-actions .mt-button{min-height:44px}}
 @media(prefers-reduced-motion:reduce){#medicine-tool *{transition:none!important;scroll-behavior:auto!important}}
+
+/* Direct notes and photo preview */
+#medicine-tool .mt-medicine-row{position:relative}
+#medicine-tool .yq-card-open{display:flex;flex-direction:column;justify-content:space-between;gap:14px;width:100%;flex:1;border:0;background:transparent;padding:0;text-align:left}
+#medicine-tool .yq-thumbnail-zoom{position:absolute;top:9px;left:9px;width:56px;height:56px;border:0;background:transparent;border-radius:12px;z-index:1}
+#medicine-tool .yq-thumbnail-zoom span{position:absolute;right:2px;bottom:2px;line-height:1;background:#fff3c8;color:#69532a;border-radius:4px;padding:1px 3px;font-size:11px}
+#medicine-tool .yq-detail-image{display:block;width:100%;border:1px solid #e6d9b7;color:#8b7549}
+#medicine-tool .yq-detail-image>span{display:block;font-size:11px;margin-top:9px}
+#medicine-tool .mt-dialog.yq-image-dialog{max-width:820px}
+#medicine-tool .yq-image-stage{display:grid;place-items:center;min-height:180px;padding:14px;border-radius:12px;background:repeating-conic-gradient(#f5f2eb 0 25%,#fff 0 50%) 0 0/20px 20px}
+#medicine-tool .yq-image-stage img{display:block;width:100%;height:min(65vh,620px);object-fit:contain}
+#medicine-tool .yq-image-caption{text-align:center;font-size:13px;font-weight:550;margin-top:12px;overflow-wrap:anywhere}
+#medicine-tool .yq-notes{margin-top:25px}
+#medicine-tool .yq-notes-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:13px}
+#medicine-tool .yq-notes-heading h3{font-size:15px;margin:0;font-weight:600}
+#medicine-tool .yq-notes-heading>span{font-size:10px;color:var(--mt-muted)}
+#medicine-tool #yq-note-form{padding:13px;background:#fff9e9;border-radius:12px}
+#medicine-tool #yq-note-form .mt-field{margin-bottom:9px}
+#medicine-tool textarea{font:inherit;resize:vertical;min-height:80px;width:100%;border:1.5px solid #cfc6b5;border-radius:9px;padding:10px 11px;background:#fffefa;color:var(--mt-ink);line-height:1.8}
+#medicine-tool textarea:focus-visible{outline:3px solid #b96720;outline-offset:3px}
+#medicine-tool textarea::placeholder{color:#a49d90}
+#medicine-tool .yq-note-submit{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#medicine-tool .yq-note-submit>span{font-size:10px;color:var(--mt-muted)}
+#medicine-tool .yq-note-submit .mt-button{min-height:36px;padding:6px 15px;font-size:12px}
+#medicine-tool .yq-note-timeline{margin-top:20px}
+#medicine-tool .yq-note-day{padding-left:14px;border-left:1.5px solid #e5d6ae;margin:0 0 0 4px;padding-bottom:18px}
+#medicine-tool .yq-note-day:last-child{padding-bottom:1px}
+#medicine-tool .yq-note-day h4{position:relative;font-size:12px;margin:0 0 10px;font-weight:600}
+#medicine-tool .yq-note-day h4:before{content:"";position:absolute;left:-19px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--yq-yellow);border:1px solid #a38a48;box-shadow:0 0 0 3px #fff}
+#medicine-tool .yq-note-day ol{list-style:none;padding:0;margin:0}
+#medicine-tool .yq-note-day li{display:grid;grid-template-columns:39px minmax(0,1fr);gap:8px;margin-top:10px;align-items:start}
+#medicine-tool .yq-note-day li>time{font-size:11px;color:#9a8866;font-variant-numeric:tabular-nums;padding-top:2px}
+#medicine-tool .yq-note-day p{font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9}
+#medicine-tool .yq-note-legacy h4 small{font-size:10px;font-weight:400;color:var(--mt-muted);margin-left:5px}
+#medicine-tool .yq-note-legacy p{color:#777064}
+#medicine-tool .yq-notes-empty{font-size:11px;color:var(--mt-muted);text-align:center;padding:10px 0}
+@media(max-width:700px){#medicine-tool textarea{font-size:16px}#medicine-tool .yq-note-submit>span{max-width:135px}#medicine-tool .yq-image-stage{padding:8px}#medicine-tool .yq-image-stage img{height:55vh}}
