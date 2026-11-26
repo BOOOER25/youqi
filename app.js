@@ -63,8 +63,11 @@
       return next;
     }) };
   }
-  // Retain existing collections and mode; new visitors start with an empty personal collection.
-  let mode = read('mode') === 'demo' ? 'demo' : 'personal';
+  // Show examples by default once, while preserving personal data and later explicit choices.
+  const savedMode = read('mode'), personal = read('personal'), demoDefaultApplied = read('demo-default-v1') === true;
+  const hasPersonalRecords = personal && (!Array.isArray(personal.items) || personal.items.length > 0);
+  let mode = savedMode === 'demo' ? 'demo' : hasPersonalRecords || (demoDefaultApplied && savedMode === 'personal') ? 'personal' : 'demo';
+  if (!demoDefaultApplied && write('mode', mode)) write('demo-default-v1', true);
   function loadMode() {
     const stored = read(mode);
     try {
