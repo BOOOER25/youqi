@@ -1,5 +1,7 @@
 /* Youqi · warm paper and hand-drawn outlines, adapted from the supplied Figma. */
 :root{color-scheme:light}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body,#medicine-tool,#medicine-tool .mt-dialog{touch-action:pan-x pan-y}
 body{margin:0;background:#f6f3eb;padding:28px 20px}
 #medicine-tool{--mt-bg:#fffdf7;--mt-paper:#fff;--mt-ink:#28251f;--mt-muted:#837f78;--mt-line:#ebe6db;--mt-green:#28251f;--mt-green-dark:#111;--mt-mint:#fff7dc;--mt-orange:#9a6015;--mt-orange-bg:#fff0bc;--mt-red:#bd4059;--mt-red-bg:#ffe3eb;--yq-yellow:#ffdf66;position:relative;max-width:920px;margin:auto;font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;font-size:14px;line-height:1.6;color:var(--mt-ink);text-align:left}
 #medicine-tool *{box-sizing:border-box}
@@ -187,3 +189,4 @@ body{margin:0;background:#f6f3eb;padding:28px 20px}
 #medicine-tool .yq-note-legacy p{color:#777064}
 #medicine-tool .yq-notes-empty{font-size:11px;color:var(--mt-muted);text-align:center;padding:10px 0}
 @media(max-width:700px){#medicine-tool textarea{font-size:16px}#medicine-tool .yq-note-submit>span{max-width:135px}#medicine-tool .yq-image-stage{padding:8px}#medicine-tool .yq-image-stage img{height:55vh}}
+@media(max-width:700px),(pointer:coarse){#medicine-tool .mt-search input,#medicine-tool .mt-field input,#medicine-tool .mt-field select,#medicine-tool textarea{font-size:16px}}

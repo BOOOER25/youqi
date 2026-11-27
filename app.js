@@ -1,5 +1,12 @@
 (() => {
   'use strict';
+  // Keep the page at its layout scale; single-finger scrolling and image buttons still work.
+  const preventPageZoom = event => { if (event.cancelable) event.preventDefault(); };
+  document.addEventListener('gesturestart', preventPageZoom, { passive: false });
+  document.addEventListener('gesturechange', preventPageZoom, { passive: false });
+  document.addEventListener('touchmove', event => {
+    if (event.touches.length > 1) preventPageZoom(event);
+  }, { passive: false });
   const root = document.getElementById('medicine-tool'), images = window.YouqiImages;
   const $ = s => root.querySelector(s), $$ = s => [...root.querySelectorAll(s)];
   const PRESETS = ['药品', '厨房', '日化', '其他'], THRESHOLD = 30, KEY = 'youqi-v1-';
